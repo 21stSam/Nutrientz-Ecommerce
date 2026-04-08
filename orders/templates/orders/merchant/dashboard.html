@@ -54,6 +54,12 @@
                             {{ order.status|upper }}
                         </span>
                     </td>
+                    <td>
+                        <span class="badge bg-info">{{ order.get_shipping_status_display }}</span>
+                        {% if order.tracking_number %}
+                            <br><small class="text-muted">ID: {{ order.tracking_number }}</small>
+                        {% endif %}
+                    </td>
                     <td>{{ order.created|date:"M d, Y" }}</td>
                     <td class="text-end fw-bold">KES {{ order.get_total_cost }}</td>
                 </tr>

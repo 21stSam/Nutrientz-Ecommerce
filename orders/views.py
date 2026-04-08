@@ -7,7 +7,6 @@ from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import user_passes_test
-
 from .models import Order, OrderItem
 from .forms import OrderCreateForm
 from cart.cart import Cart
@@ -27,12 +26,20 @@ def order_create(request):
             order.save()
 
             for item in cart:
+                # 1. Create the Order Item
                 OrderItem.objects.create(
                     order=order,
                     product=item["product"],
                     price=item["price"],
                     quantity=item["quantity"],
                 )
+                # 2. Reduce the Stock
+                product = item["product"]
+                product.stock -= item["quantity"]
+                product.save()
+
+            # 3. CLEAR THE CART (Crucial to do this before the redirect)
+            cart.clear()
 
             # --- iPay Logic ---
             vendor_id = "demo"
@@ -48,7 +55,6 @@ def order_create(request):
             )
 
             # 2. Secure Callback URL
-            # build_absolute_uri is used to ensure iPay can find your server
             cbk = request.build_absolute_uri("/orders/callback/").strip()
 
             # 3. Parameters
@@ -58,13 +64,11 @@ def order_create(request):
             # 4. THE iPay V3 KE HASH PATTERN (Strict Order)
             data_string = f"{live}{mm}{mb}{mpesa}{telkom}{vendor_id}{curr}{p1}{p2}{p3}{p4}{amount}{cbk}{cst}{cl}"
 
-            # DEBUG: Uncomment the line below to check your terminal if it fails again
-            # print(f"DEBUG HASH STRING: {data_string}")
-
             hash_key = hmac.new(
                 secret_key.encode("utf-8"), data_string.encode("utf-8"), hashlib.sha256
             ).hexdigest()
 
+            # 4. Hand off to the Payment Redirect Template
             return render(
                 request,
                 "orders/order/payment_redirect.html",
@@ -146,7 +150,7 @@ def order_retry_payment(request, order_id):
 @login_required
 def user_order_history(request):
     # Only logged-in customers see their own data
-    return render(request, 'orders/customer/history.html')
+    return render(request, "orders/customer/history.html")
 
 
 @user_passes_test(lambda u: u.is_staff)
@@ -166,5 +170,25 @@ def merchant_dashboard(request):
 
 @staff_member_required
 def merchant_dashboard(request):
-    # Only you and staff can see this!
-    return render(request, "orders/merchant/dashboard.html")
+    all_orders = Order.objects.all()
+    recent_orders = all_orders.order_by("-created")[:10]
+
+    # Logic: Paid but not yet 'shipped' or 'delivered'
+    pending_shipping = (
+        all_orders.filter(status="paid")
+        .exclude(shipping_status__in=["shipped", "delivered"])
+        .count()
+    )
+
+    context = {
+        "total_orders": all_orders.count(),
+        "pending_shipping": pending_shipping,
+        "recent_orders": recent_orders,
+    }
+    return render(request, "orders/merchant/dashboard.html", context)
+
+
+@staff_member_required
+def merchant_order_list(request):
+    orders = Order.objects.all().order_by("-created")
+    return render(request, "orders/merchant/dashboard.html", {"orders": orders})

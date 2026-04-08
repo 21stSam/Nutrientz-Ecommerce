@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from decimal import Decimal
 from shop.models import Product
 
+
 class Order(models.Model):
     # --- Choices ---
     DELIVERY_CHOICES = [
@@ -17,28 +18,41 @@ class Order(models.Model):
         ("failed", "Failed"),
     )
 
+    # New choices for the merchant fulfillment workflow
+    SHIPPING_STATUS_CHOICES = (
+        ("processing", "Processing"),
+        ("shipped", "Shipped"),
+        ("delivered", "Delivered"),
+        ("cancelled", "Cancelled"),
+    )
+
     # --- Fields ---
-    # Added user field back as views.py uses order.user = request.user
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='orders', null=True, blank=True)
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="orders", null=True, blank=True
+    )
     first_name = models.CharField(max_length=50)
     last_name = models.CharField(max_length=50)
     email = models.EmailField()
     phone_number = models.CharField(max_length=20, blank=True, null=True)
 
-    county = models.CharField(max_length=100, default='Nairobi')
-    city_estate = models.CharField(max_length=100) 
+    county = models.CharField(max_length=100, default="Nairobi")
+    city_estate = models.CharField(max_length=100)
     address = models.CharField(max_length=250)
 
-    # ADDED THIS: The missing field that caused the form error
     delivery_fee = models.DecimalField(
-        max_digits=10, 
-        decimal_places=2, 
-        choices=DELIVERY_CHOICES, 
-        default=300
+        max_digits=10, decimal_places=2, choices=DELIVERY_CHOICES, default=300
     )
 
+    # --- Payment & Status ---
     ipay_transaction_id = models.CharField(max_length=100, blank=True, null=True)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default="pending")
+
+    # ADDED: Tracking and Shipping Status for Merchant Dashboard
+    shipping_status = models.CharField(
+        max_length=20, choices=SHIPPING_STATUS_CHOICES, default="processing"
+    )
+    tracking_number = models.CharField(max_length=100, blank=True, null=True)
+
     total_paid = models.DecimalField(
         max_digits=10, decimal_places=2, default=Decimal("0.00")
     )
@@ -59,12 +73,16 @@ class Order(models.Model):
         return self.get_total_cost() + self.delivery_fee
 
     def update_total_paid(self):
+        # Using F expression or direct assignment is better for atomic updates
         self.total_paid = self.get_total_cost()
-        Order.objects.filter(pk=self.pk).update(total_paid=self.total_paid)
+        self.save(update_fields=["total_paid"])
+
 
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, related_name="items", on_delete=models.CASCADE)
-    product = models.ForeignKey(Product, related_name="order_items", on_delete=models.CASCADE)
+    product = models.ForeignKey(
+        Product, related_name="order_items", on_delete=models.CASCADE
+    )
     price = models.DecimalField(max_digits=10, decimal_places=2)
     quantity = models.PositiveIntegerField(default=1)
 
