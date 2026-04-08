@@ -192,3 +192,43 @@ def merchant_dashboard(request):
 def merchant_order_list(request):
     orders = Order.objects.all().order_by("-created")
     return render(request, "orders/merchant/dashboard.html", {"orders": orders})
+
+
+@staff_member_required
+def mark_order_as_paid(request, order_id):
+    order = get_object_or_404(Order, id=order_id)
+    order.status = "paid"
+    order.save()
+    # This matches the name='merchant_dashboard' in your urlpatterns
+    return redirect("orders:merchant_dashboard")
+
+
+@staff_member_required
+def mark_order_as_shipped(request, order_id):
+    order = get_object_or_404(Order, id=order_id)
+    if order.status == "paid":
+        order.shipping_status = "shipped"
+        # Optional: Generate a random tracking number if empty
+        if not order.tracking_number:
+            order.tracking_number = f"NTZ-{order.id}-KW"
+        order.save()
+    return redirect("orders:merchant_dashboard")
+
+
+@login_required
+def order_detail(request, order_id):
+    order = get_object_or_404(Order, id=order_id, user=request.user)
+
+    if request.method == "POST" and "confirm_delivery" in request.POST:
+        if order.shipping_status == "shipped":
+            order.shipping_status = "delivered"
+            order.save()
+            return redirect("orders:order_detail", order_id=order.id)
+
+    return render(request, "orders/order/detail.html", {"order": order})
+
+
+@staff_member_required
+def merchant_order_detail(request, order_id):
+    order = get_object_or_404(Order, id=order_id)
+    return render(request, "orders/merchant/detail.html", {"order": order})
