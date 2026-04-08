@@ -1,0 +1,49 @@
+{% extends "shop/base.html" %}
+
+{% block title %}Login | Nutrientz{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center mt-5">
+    <div class="col-md-4">
+        <div class="card shadow border-0">
+            <div class="card-body p-5 text-center">
+                <i class="bi bi-person-lock text-primary display-4"></i>
+                <h3 class="fw-bold mt-3">Welcome Back</h3>
+                <p class="text-muted mb-4">Login to manage your health orders.</p>
+
+                <form method="post" action="">
+                    {% csrf_token %}
+
+                    {% if form.errors %}
+                        <div class="alert alert-danger small p-2">
+                            Your username and password didn't match. Please try again.
+                        </div>
+                    {% endif %}
+
+                    <div class="mb-3 text-start">
+                        <label class="form-label small fw-bold">Username</label>
+                        {{ form.username }}
+                    </div>
+                    <div class="mb-4 text-start">
+                        <label class="form-label small fw-bold">Password</label>
+                        {{ form.password }}
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100 py-2 fw-bold shadow-sm">
+                        Login to Nutrientz
+                    </button>
+                </form>
+
+                <div class="mt-4 small">
+                    <span class="text-muted">Don't have an account?</span>
+                    <a href="{% url 'accounts:register' %}" class="text-primary text-decoration-none fw-bold">Create one</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Quick fix to make Django's default form fields look like Bootstrap */
+    input { width: 100%; padding: 0.5rem; border: 1px solid #dee2e6; border-radius: 8px; }
+</style>
+{% endblock %}

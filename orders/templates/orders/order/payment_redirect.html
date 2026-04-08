@@ -1,0 +1,47 @@
+{% extends "shop/base.html" %}
+
+{% block title %}Redirecting to Payment...{% endblock %}
+
+{% block content %}
+<div class="container py-5 text-center">
+    <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+    </div>
+    <h2 class="mt-3 fw-bold">Redirecting to Secure Payment...</h2>
+    <p class="text-muted">Please do not refresh the page or click the back button.</p>
+
+    <form id="ipay-form" action="https://payments.ipayafrica.com/v3/ke" method="post">
+        <input type="hidden" name="live" value="{{ live }}">
+        <input type="hidden" name="mm" value="{{ mm }}">
+        <input type="hidden" name="mb" value="{{ mb }}">
+        <input type="hidden" name="mpesa" value="{{ mpesa }}">
+        <input type="hidden" name="telkom" value="{{ telkom }}">
+        <input type="hidden" name="vid" value="{{ vendor_id }}">
+        <input type="hidden" name="curr" value="{{ curr }}">
+        <input type="hidden" name="p1" value="{{ p1 }}">
+        <input type="hidden" name="p2" value="{{ p2 }}">
+        <input type="hidden" name="p3" value="">
+        <input type="hidden" name="p4" value="">
+        <input type="hidden" name="cbk" value="{{ cbk }}">
+        <input type="hidden" name="cst" value="{{ cst }}">
+        <input type="hidden" name="cl" value="{{ cl }}">
+        <input type="hidden" name="amt" value="{{ amount }}">
+        <input type="hidden" name="hsh" value="{{ hash }}">
+        <input type="hidden" name="oid" value="{{ p1 }}">
+        <input type="hidden" name="ttl" value="{{ amount }}">
+        <input type="hidden" name="eml" value="{{ order.email }}">
+        <input type="hidden" name="tel" value="{{ order.phone_number }}">
+
+        <noscript>
+            <p>If you are not redirected within 5 seconds, please click the button below:</p>
+            <button type="submit" class="btn btn-success">Pay Now</button>
+        </noscript>
+    </form>
+</div>
+
+<script type="text/javascript">
+    window.onload = function() {
+        document.getElementById('ipay-form').submit();
+    }
+</script>
+{% endblock %}

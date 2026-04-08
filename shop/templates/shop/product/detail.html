@@ -1,0 +1,149 @@
+{% extends "shop/base.html" %}
+{% load static %}
+
+{% block title %}{{ product.name }} | Nutrientz{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'shop:product_list' %}" class="text-decoration-none">Shop</a></li>
+        <li class="breadcrumb-item"><a href="{{ product.category.get_absolute_url }}" class="text-decoration-none">{{ product.category.name }}</a></li>
+        <li class="breadcrumb-item active" aria-current="page">{{ product.name }}</li>
+    </ol>
+</nav>
+
+<div class="row g-5">
+    <div class="col-md-6">
+        <div class="card border-0 shadow-sm p-4">
+            <div class="product-detail-img-container" style="height: 500px; display: flex; align-items: center; justify-content: center; background: #fff; overflow: hidden;">
+                {% if product.image %}
+                    <img src="{{ product.image.url }}" alt="{{ product.name }}" class="img-fluid" style="max-height: 100%; object-fit: contain;">
+                {% else %}
+                    <i class="bi bi-image text-muted" style="font-size: 5rem;"></i>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="ps-md-4">
+            <h1 class="fw-bold mb-3">{{ product.name }}</h1>
+            
+            <div class="mb-4">
+                <span class="badge rounded-pill bg-primary-subtle text-primary px-3 py-2 me-2">
+                    {{ product.category.name }}
+                </span>
+                {% if product.stock > 0 %}
+                    <span class="text-success small fw-bold"><i class="bi bi-check-circle-fill"></i> In Stock & Ready to Ship</span>
+                {% else %}
+                    <span class="text-danger small fw-bold"><i class="bi bi-x-circle-fill"></i> Currently Out of Stock</span>
+                {% endif %}
+            </div>
+
+            <h2 class="text-primary fw-bold mb-4">KES {{ product.price }}</h2>
+
+            <div class="mb-4">
+                <div class="mb-4">
+                    <h5 class="fw-bold">Product Description</h5>
+                    <div class="text-muted">
+                        {{ product.description|linebreaks }}
+                    </div>
+                </div>
+
+                <hr class="my-4 text-muted opacity-25">
+
+                <div class="row">
+                    {% if product.benefits %}
+                    <div class="col-md-6 mb-4">
+                        <div class="h-100 p-3 bg-success-subtle rounded-3 border border-success-subtle">
+                            <h5 class="fw-bold text-success mb-3">
+                                <i class="bi bi-shield-check me-2"></i>Key Benefits
+                            </h5>
+                            <ul class="list-unstyled mb-0">
+                                {% for line in product.benefits.splitlines %}
+                                    {% if line.strip %}
+                                        <li class="mb-2 d-flex">
+                                            <i class="bi bi-check2-circle text-success me-2 mt-1"></i>
+                                            <span>{{ line }}</span>
+                                        </li>
+                                    {% endif %}
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% if product.usage %}
+                    <div class="col-md-6 mb-4">
+                        <div class="h-100 p-3 bg-info-subtle rounded-3 border border-info-subtle">
+                            <h5 class="fw-bold text-info mb-3">
+                                <i class="bi bi-info-circle me-2"></i>How to Use
+                            </h5>
+                            <div class="small">
+                                {{ product.usage|linebreaks }}
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <hr class="my-4">
+
+            <form action="{% url 'cart:cart_add' product.id %}" method="post" class="add-to-cart-form row g-3">
+                {% csrf_token %}
+                <div class="col-auto">
+                    <label for="quantity" class="form-label small fw-bold text-uppercase">Qty</label>
+                    <input type="number" name="quantity" value="1" min="1" max="{{ product.stock }}" class="form-control" id="quantity" style="width: 80px;">
+                </div>
+                <div class="col">
+                    <label class="form-label d-none d-md-block">&nbsp;</label>
+                    <button type="submit" class="btn btn-primary btn-lg w-100 fw-bold" {% if product.stock <= 0 %}disabled{% endif %}>
+                        <i class="bi bi-cart-plus-fill me-2"></i> Add to Cart
+                    </button>
+                </div>
+            </form>
+
+            <div class="mt-5 p-3 bg-light rounded border border-dashed">
+                <div class="d-flex align-items-center mb-2">
+                    <i class="bi bi-shield-check text-primary fs-4 me-3"></i>
+                    <div>
+                        <h6 class="mb-0 fw-bold">Quality Guaranteed</h6>
+                        <small class="text-muted">Pure extracts, sourced responsibly for Nutrientz.</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <section class="mt-5 pt-5 border-top">
+        <h3 class="fw-bold mb-4">You Might Also Like</h3>
+        <div class="row row-cols-1 row-cols-md-3 g-4">
+            {% for rp in related_products %}
+            <div class="col">
+                <div class="card h-100 shadow-sm border-0">
+                    <a href="{{ rp.get_absolute_url }}" class="text-decoration-none">
+                        <div class="product-img-container" style="height: 180px; display: flex; align-items: center; justify-content: center; background: #fff; overflow: hidden; padding: 10px;">
+                            {% if rp.image %}
+                                <img src="{{ rp.image.url }}" alt="{{ rp.name }}" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+                            {% else %}
+                                <i class="bi bi-image text-muted fs-2"></i>
+                            {% endif %}
+                        </div>
+                    </a>
+                    <div class="card-body text-center d-flex flex-column">
+                        <a href="{{ rp.get_absolute_url }}" class="text-decoration-none text-dark">
+                            <h6 class="card-title mb-2">{{ rp.name }}</h6>
+                        </a>
+                        <p class="text-primary fw-bold mt-auto mb-0">KES {{ rp.price }}</p>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12">
+                <p class="text-muted small italic">Discover more wellness products in our <a href="{% url 'shop:product_list' %}">full catalog</a>.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+</div>
+{% endblock %}

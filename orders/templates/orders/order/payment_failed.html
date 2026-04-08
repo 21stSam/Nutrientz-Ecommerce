@@ -1,0 +1,47 @@
+{% extends "shop/base.html" %}
+
+{% block title %}Payment Failed{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 text-center">
+            <div class="card shadow-sm border-danger">
+                <div class="card-body py-5">
+                    <h1 class="text-danger mb-4">Payment Unsuccessful</h1>
+
+                    <p class="lead">
+                        We encountered an issue while processing your payment for 
+                        <strong>Order #{{ order.id }}</strong>.
+                    </p>
+
+                    <div class="alert alert-warning my-4">
+                        <p class="mb-0">
+                            Common reasons for failure include: 
+                            Insufficient funds, a timed-out M-Pesa prompt, 
+                            or a canceled transaction.
+                        </p>
+                    </div>
+
+                    <p>Don't worry, your order has been saved, but it remains unpaid.</p>
+
+                    <div class="mt-5">
+                        <a href="{% url 'shop:product_list' %}" class="btn btn-outline-secondary btn-lg me-3">
+                            Continue Shopping
+                        </a>
+
+                        <a href="{% url 'orders:user_orders' %}" class="btn btn-primary btn-lg">
+                            View My Orders & Retry
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <p class="text-muted mt-4">
+                If you believe this is an error, please contact our support team with your Order ID: 
+                <strong>{{ order.id }}</strong>
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,65 @@
+{% extends "shop/base.html" %}
+
+{% block title %}Checkout | Nutrientz{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4 fw-bold">Checkout</h2>
+    <form action="." method="post" class="row g-4">
+        {% csrf_token %}
+        
+        <div class="col-md-7">
+            <div class="card shadow-sm border-0 p-4">
+                <h5 class="mb-4"><i class="bi bi-geo-alt me-2"></i>Delivery Information</h5>
+                <div class="row g-3">
+                    <div class="col-md-6">{{ form.first_name }}</div>
+                    <div class="col-md-6">{{ form.last_name }}</div>
+                    <div class="col-12">{{ form.email }}</div>
+                    <div class="col-12">
+                        <label class="form-label small text-muted">M-Pesa Number</label>
+                        {{ form.phone_number }}
+                    </div>
+                    <div class="col-md-6">{{ form.county }}</div>
+                    <div class="col-md-6">{{ form.city_estate }}</div>
+                    <div class="col-12">{{ form.address }}</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-5">
+            <div class="card shadow-sm border-0 p-4 sticky-top" style="top: 2rem;">
+                <h5 class="mb-4">Order Summary</h5>
+                <ul class="list-group list-group-flush mb-3">
+                    {% for item in cart %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center px-0 bg-transparent">
+                        <span class="small">{{ item.quantity }}x {{ item.product.name }}</span>
+                        <span class="small fw-bold">KES {{ item.total_price }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+
+                <div class="mb-3">
+                    <label class="form-label small text-muted">Select Delivery Area</label>
+                    {{ form.delivery_fee }}
+                </div>
+
+                <hr>
+                <div class="d-flex justify-content-between h5 fw-bold mb-4">
+                    <span>Total Amount</span>
+                    <span class="text-primary">KES {{ cart.get_total_price }}</span>
+                </div>
+                
+                <p class="small text-muted mb-4">
+                    <i class="bi bi-info-circle me-1"></i> Delivery fee will be finalized on the next screen before iPay payment.
+                </p>
+
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-primary btn-lg shadow-sm">
+                        Confirm Order & Pay <i class="bi bi-arrow-right ms-2"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}

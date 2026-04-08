@@ -1,0 +1,83 @@
+{% extends "shop/base.html" %}
+
+{% block title %}Create Account | Nutrientz{% endblock %}
+
+{% block content %}
+<div class="auth-page" style="align-items:flex-start; padding: 2rem 1rem;">
+    <div class="auth-card" style="max-width: 520px; margin: 0 auto; background: #fff; border-radius: 12px; overflow: hidden; shadow: 0 10px 25px rgba(0,0,0,0.1);">
+        <div class="auth-header" style="background: #212529; color: #fff; padding: 2rem; text-align: center;">
+            <h2 class="fw-800 mb-1">NUTRI<span style="color:#ff9f1c;"></span>ENTZ</h2>
+            <p class="mb-0 small" style="color:rgba(255,255,255,0.7);">Create your free account today</p>
+        </div>
+        <div class="auth-body" style="padding: 2rem;">
+
+            <form method="post" action="{% url 'accounts:register' %}" novalidate>
+                {% csrf_token %}
+
+                <div class="row g-3 mb-1">
+                    {% for field in form %}
+                    <div class="{% if field.name == 'username' or field.name == 'email' or field.name == 'password' or field.name == 'confirm_password' or field.name == 'location' %}col-12{% else %}col-sm-6{% endif %}">
+                        <label class="form-label fw-bold small" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {{ field }}
+                        {% if field.errors %}
+                        <div class="text-danger small mt-1">
+                            <i class="bi bi-x-circle me-1"></i>{{ field.errors|striptags }}
+                        </div>
+                        {% endif %}
+                        {% if field.help_text %}
+                        <div class="form-text text-muted" style="font-size:0.78rem;">{{ field.help_text|safe }}</div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <div class="d-grid mt-4">
+                    <button type="submit" class="btn btn-primary btn-lg fw-600 shadow-sm">
+                        <i class="bi bi-person-check me-2"></i>Create My Account
+                    </button>
+                </div>
+            </form>
+
+            <p class="text-center text-muted small mb-0 mt-4">
+                Already have an account? 
+                <a href="{% url 'accounts:login' %}" class="text-decoration-none fw-600" style="color:#0d6efd;">
+                    Log in here
+                </a>
+            </p>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* IMPORTANT: This CSS ensures that Django's default 
+       form widgets inherit Bootstrap styling 
+    */
+    input, select, textarea {
+        display: block;
+        width: 100%;
+        padding: 0.5rem 0.85rem;
+        font-size: 0.9rem;
+        font-weight: 400;
+        line-height: 1.5;
+        color: #212529;
+        background-color: #fff;
+        background-clip: padding-box;
+        border: 1px solid #dee2e6;
+        appearance: none;
+        border-radius: 8px;
+        transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out;
+    }
+
+    input:focus {
+        color: #212529;
+        background-color: #fff;
+        border-color: #86b7fe;
+        outline: 0;
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    }
+
+    .auth-card {
+        border: 1px solid #eee;
+    }
+</style>
+{% endblock %}

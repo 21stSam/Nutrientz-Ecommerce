@@ -1,0 +1,30 @@
+/* Change the Header background */
+#header {
+    background: #1b4332 !important; /* Nutrientz Dark Green */
+    color: #ff9f1c !important; /* Nutrientz Gold Accent */
+}
+
+/* Change the "Mission Control" bar */
+.breadcrumbs {
+    background: #2d6a4f !important; /* Nutrientz Primary Green */
+}
+
+/* Sidebar and module headers */
+.module h2, .module th, .selector-chosen h2 {
+    background: #2d6a4f !important;
+}
+
+/* Buttons */
+.button, input[type=submit], input[type=button], .submit-row input {
+    background: #2d6a4f !important;
+    border-radius: 4px;
+}
+
+.button:hover, input[type=submit]:hover {
+    background: #1b4332 !important;
+}
+
+/* Links */
+a:link, a:visited {
+    color: #2d6a4f;
+}
