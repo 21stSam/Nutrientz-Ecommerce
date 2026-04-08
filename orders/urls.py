@@ -9,6 +9,7 @@ urlpatterns = [
     path(
         "retry/<int:order_id>/", views.order_retry_payment, name="order_retry_payment"
     ),
+    path("order/<int:order_id>/", views.order_detail, name="order_detail"),
     path("my-orders/", views.user_order_history, name="user_order_history"),
     # --- Payment Integration ---
     path("callback/", views.payment_callback, name="payment_callback"),

@@ -5,7 +5,7 @@ from django.db.models import Q
 from django.contrib.auth.decorators import user_passes_test
 from django.shortcuts import render, get_object_or_404, redirect
 from .forms import ProductForm  # Make sure this matches your forms.py class name
-
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 def product_list(request, category_slug=None):
     category = None
@@ -22,6 +22,18 @@ def product_list(request, category_slug=None):
         category_ids = [category.id] + [c.id for c in category.children.all()]
         # If you have 3 levels, you might need a deeper loop or the get_descendants method
         products = products.filter(category_id__in=category_ids)
+    # --- Pagination Logic ---
+    paginator = Paginator(products, 9)  # Show 9 products per page (3x3 grid)
+    page = request.GET.get("page")
+
+    try:
+        products = paginator.page(page)
+    except PageNotAnInteger:
+        # If page is not an integer, deliver first page.
+        products = paginator.page(1)
+    except EmptyPage:
+        # If page is out of range, deliver last page of results.
+        products = paginator.page(paginator.num_pages)
 
     return render(
         request,
@@ -29,8 +41,7 @@ def product_list(request, category_slug=None):
         {
             "category": category,
             "categories": categories,
-            "products": products,
-            "featured_products": featured_products,
+            "products": products,  # This is now a Page object, not a QuerySet
         },
     )
 

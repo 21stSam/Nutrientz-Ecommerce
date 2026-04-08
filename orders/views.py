@@ -149,41 +149,36 @@ def order_retry_payment(request, order_id):
 
 @login_required
 def user_order_history(request):
-    # Only logged-in customers see their own data
-    return render(request, "orders/customer/history.html")
+    # Fetch orders belonging to the logged-in user
+    orders = Order.objects.filter(user=request.user).order_by("-created")
 
-
-@user_passes_test(lambda u: u.is_staff)
-def merchant_dashboard(request):
-    total_orders = Order.objects.count()
-    # 'pending_shipping' represents orders that are PAID but haven't been dealt with yet
-    pending_shipping = Order.objects.filter(status="paid").count()
-    recent_orders = Order.objects.all().order_by("-created")[:10]
-
-    context = {
-        "total_orders": total_orders,
-        "pending_shipping": pending_shipping,
-        "recent_orders": recent_orders,
-    }
-    return render(request, "orders/merchant/dashboard.html", context)
+    context = {"orders": orders}
+    return render(request, "orders/customer/history.html", context)
 
 
 @staff_member_required
 def merchant_dashboard(request):
+    # 1. Get all orders for calculations
     all_orders = Order.objects.all()
-    recent_orders = all_orders.order_by("-created")[:10]
 
-    # Logic: Paid but not yet 'shipped' or 'delivered'
+    # 2. Logic: Paid but not yet 'shipped' or 'delivered' (The actionable stuff)
     pending_shipping = (
         all_orders.filter(status="paid")
         .exclude(shipping_status__in=["shipped", "delivered"])
         .count()
     )
 
+    # 3. Recent activity for the table
+    recent_orders = all_orders.order_by("-created")[:10]
+
+    # 4. Overall stats
     context = {
         "total_orders": all_orders.count(),
         "pending_shipping": pending_shipping,
         "recent_orders": recent_orders,
+        "total_revenue": sum(
+            o.get_total_cost() for o in all_orders.filter(status="paid")
+        ),
     }
     return render(request, "orders/merchant/dashboard.html", context)
 
